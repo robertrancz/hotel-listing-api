@@ -28,7 +28,7 @@ namespace HotelListing.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Rating = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Rating = table.Column<double>(type: "float", nullable: false),
                     CountryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -40,6 +40,28 @@ namespace HotelListing.Migrations
                         principalTable: "Countries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Countries",
+                columns: new[] { "Id", "Name", "ShortName" },
+                values: new object[,]
+                {
+                    { 1, "Romania", "RO" },
+                    { 2, "United States", "US" },
+                    { 3, "Bahamas", "BS" },
+                    { 4, "Jamaica", "JM" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Hotels",
+                columns: new[] { "Id", "Address", "CountryId", "Name", "Rating" },
+                values: new object[,]
+                {
+                    { 3, "Brasov", 1, "Bella Muzica", 4.5 },
+                    { 4, "Brasov", 1, "Aro Palace", 4.0 },
+                    { 2, "Nassua", 3, "Grand Palladium", 4.0 },
+                    { 1, "Negril", 4, "Sandals Resort And Spa", 4.5 }
                 });
 
             migrationBuilder.CreateIndex(

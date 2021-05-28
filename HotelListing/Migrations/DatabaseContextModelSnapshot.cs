@@ -34,6 +34,32 @@ namespace HotelListing.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Countries");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Romania",
+                            ShortName = "RO"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "United States",
+                            ShortName = "US"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Bahamas",
+                            ShortName = "BS"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Jamaica",
+                            ShortName = "JM"
+                        });
                 });
 
             modelBuilder.Entity("HotelListing.Data.Hotel", b =>
@@ -52,14 +78,48 @@ namespace HotelListing.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Rating")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Rating")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CountryId");
 
                     b.ToTable("Hotels");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Address = "Negril",
+                            CountryId = 4,
+                            Name = "Sandals Resort And Spa",
+                            Rating = 4.5
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "Nassua",
+                            CountryId = 3,
+                            Name = "Grand Palladium",
+                            Rating = 4.0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "Brasov",
+                            CountryId = 1,
+                            Name = "Bella Muzica",
+                            Rating = 4.5
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Address = "Brasov",
+                            CountryId = 1,
+                            Name = "Aro Palace",
+                            Rating = 4.0
+                        });
                 });
 
             modelBuilder.Entity("HotelListing.Data.Hotel", b =>
