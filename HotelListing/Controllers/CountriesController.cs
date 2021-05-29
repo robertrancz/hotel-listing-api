@@ -33,7 +33,7 @@ namespace HotelListing.Controllers
         {
             try
             {
-                var countries = await _unitOfWork.Countries.GetAll();
+                var countries = await _unitOfWork.Countries.GetAllAsync();
                 var results = _mapper.Map<IList<CountryDto>>(countries);
                 return Ok(countries);
             }

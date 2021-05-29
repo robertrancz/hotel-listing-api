@@ -20,7 +20,7 @@ namespace HotelListing.Repository
             db = context.Set<T>();
         }
 
-        public async Task Delete(int id)
+        public async Task DeleteAsync(int id)
         {
             var entity = await db.FindAsync(id);
             db.Remove(entity);
@@ -37,7 +37,7 @@ namespace HotelListing.Repository
         /// <returns>
         ///   The first element that satisfies the specified condition or a default value if no such element is found
         /// </returns>
-        public async Task<T> Get(Expression<Func<T, bool>> expression = null, List<string> includes = null)
+        public async Task<T> GetAsync(Expression<Func<T, bool>> expression = null, List<string> includes = null)
         {
             IQueryable<T> query = db;
 
@@ -59,7 +59,7 @@ namespace HotelListing.Repository
         /// <returns>
         ///   <br />
         /// </returns>
-        public async Task<IList<T>> GetAll(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, List<string> includes = null)
+        public async Task<IList<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, List<string> includes = null)
         {
             IQueryable<T> query = db;
 
@@ -87,12 +87,12 @@ namespace HotelListing.Repository
             return await query.AsNoTracking().ToListAsync();
         }
 
-        public async Task Insert(T entity)
+        public async Task InsertAsync(T entity)
         {
             await db.AddAsync(entity);
         }
 
-        public async Task InsertRange(IEnumerable<T> entities)
+        public async Task InsertRangeAsync(IEnumerable<T> entities)
         {
             await db.AddRangeAsync(entities);
         }
