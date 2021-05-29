@@ -55,6 +55,8 @@ namespace HotelListing.Controllers
                     return BadRequest(ModelState);
                 }
 
+                await _userManager.AddToRolesAsync(user, userDto.Roles);
+
                 _logger.LogInformation($"User registration successful for {userDto.Email}");
                 return Accepted();
             }
@@ -63,6 +65,6 @@ namespace HotelListing.Controllers
                 _logger.LogError(ex, $"Something went wrong in the {nameof(Register)}");
                 return Problem($"Something went wrong with your user registration", statusCode: StatusCodes.Status500InternalServerError);
             }
-        }        
+        }
     }
 }
