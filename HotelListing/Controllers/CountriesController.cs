@@ -35,7 +35,30 @@ namespace HotelListing.Controllers
             {
                 var countries = await _unitOfWork.Countries.GetAllAsync();
                 var results = _mapper.Map<IList<CountryDto>>(countries);
-                return Ok(countries);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something went wrong in the {nameof(GetCountries)}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
+            }
+        }
+
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(IList<CountryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCountry(int id)
+        {
+            try
+            {
+                var country = await _unitOfWork.Countries.GetAsync(q => q.Id == id, new List<string> { "Hotels" });
+                var result = _mapper.Map<CountryDto>(country);
+
+                if (country == null)
+                    return StatusCode(StatusCodes.Status204NoContent); //, $"The request was successful, but there is no country with id={id}");
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
