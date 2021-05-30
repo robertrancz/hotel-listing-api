@@ -35,9 +35,11 @@ namespace HotelListing
                         ValidateIssuer = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
+                        //ValidAudience = jwtSettings.GetSection("audience").Value,
                         ValidIssuer = jwtSettings.GetSection("issuer").Value,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
                     };
+                    o.Audience = jwtSettings.GetSection("audience").Value;
                 });
         }
     }

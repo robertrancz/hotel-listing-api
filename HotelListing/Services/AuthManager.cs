@@ -50,8 +50,9 @@ namespace HotelListing.Services
         }
 
         private async Task<List<Claim>> GetClaimsAsync()
-        {
+        {            
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, _user.UserName) };
+            //claims.Add(new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:audience"]));
 
             var roles = await _userManager.GetRolesAsync(_user);
             foreach (var role in roles)
@@ -69,8 +70,8 @@ namespace HotelListing.Services
             bool success = double.TryParse(jwtSettings.GetSection("lifetime").Value, out double result);
             double lifetime = success ? result : defaultTokenLifetimeMinutes;
 
-            var token = new JwtSecurityToken(issuer: jwtSettings.GetSection("issuer").Value, claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(lifetime), signingCredentials: signingCredentials);
+            var token = new JwtSecurityToken(issuer: jwtSettings.GetSection("issuer").Value, audience: jwtSettings.GetSection("audience").Value,
+                claims: claims, expires: DateTime.UtcNow.AddMinutes(lifetime), signingCredentials: signingCredentials);
 
             return token;
         }

@@ -14,6 +14,11 @@ namespace HotelListing.Models
         public string ShortName { get; set; }
     }
 
+    public class CountryDtoUpdate : CountryDtoCreate
+    {
+        public IList<HotelDtoCreate> Hotels { get; set; }
+    }
+
     public class CountryDto : CountryDtoCreate
     {
         public int Id { get; set; }
