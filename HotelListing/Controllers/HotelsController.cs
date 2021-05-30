@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HotelListing.Controllers
@@ -33,17 +31,9 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotels()
         {
-            try
-            {
-                var hotels = await _unitOfWork.Hotels.GetAllAsync();
-                var results = _mapper.Map<IList<HotelDto>>(hotels);
-                return Ok(results);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(GetHotels)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            var hotels = await _unitOfWork.Hotels.GetAllAsync();
+            var results = _mapper.Map<IList<HotelDto>>(hotels);
+            return Ok(results);
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
@@ -52,21 +42,13 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotel(int id)
         {
-            try
-            {
-                var hotel = await _unitOfWork.Hotels.GetAsync(q => q.Id == id, new List<string> { "Country" });
-                var result = _mapper.Map<HotelDto>(hotel);
+            var hotel = await _unitOfWork.Hotels.GetAsync(q => q.Id == id, new List<string> { "Country" });
+            var result = _mapper.Map<HotelDto>(hotel);
 
-                if (hotel == null)
-                    return StatusCode(StatusCodes.Status204NoContent);
+            if (hotel == null)
+                return StatusCode(StatusCodes.Status204NoContent);
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(GetHotel)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            return Ok(result);
         }
 
         [HttpPost]
@@ -81,20 +63,12 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var hotel = _mapper.Map<Hotel>(model);
-                await _unitOfWork.Hotels.InsertAsync(hotel);
-                await _unitOfWork.SaveAsync();
+            var hotel = _mapper.Map<Hotel>(model);
+            await _unitOfWork.Hotels.InsertAsync(hotel);
+            await _unitOfWork.SaveAsync();
 
-                // sets the 'Location' header with the route to the GET /hotel/{id} route
-                return CreatedAtRoute("GetHotel", new { id = hotel.Id }, hotel);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(CreateHotel)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            // sets the 'Location' header with the route to the GET /hotel/{id} route
+            return CreatedAtRoute("GetHotel", new { id = hotel.Id }, hotel);
         }
 
         [HttpPut("{id:int}")]
@@ -109,26 +83,18 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var hotel = await _unitOfWork.Hotels.GetAsync(q => q.Id == id);
+            if (hotel == null)
             {
-                var hotel = await _unitOfWork.Hotels.GetAsync(q => q.Id == id);
-                if (hotel == null)
-                {
-                    _logger.LogError($"Invalid update attempt in {nameof(UpdateHotel)}: resource with id={id} was not found.");
-                    return BadRequest("Invalid id");
-                }
-
-                _mapper.Map(model, hotel);
-                _unitOfWork.Hotels.Update(hotel);
-                await _unitOfWork.SaveAsync();
-
-                return NoContent();
+                _logger.LogError($"Invalid update attempt in {nameof(UpdateHotel)}: resource with id={id} was not found.");
+                return BadRequest("Invalid id");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(UpdateHotel)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+
+            _mapper.Map(model, hotel);
+            _unitOfWork.Hotels.Update(hotel);
+            await _unitOfWork.SaveAsync();
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -138,30 +104,23 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteHotel(int id)
         {
-            if(id < 1)
+            if (id < 1)
             {
                 _logger.LogError($"Invalid delete attempt in {nameof(DeleteHotel)}: resource with id={id} was not found.");
                 return BadRequest("Invalid id");
             }
-            try
-            {
-                var hotel = _unitOfWork.Hotels.GetAsync(q => q.Id == id);
-                if (hotel == null)
-                {
-                    _logger.LogError($"Invalid delete attempt in {nameof(DeleteHotel)}: resource with id={id} was not found.");
-                    return BadRequest($"Hotel with id={id} does not exist");
-                }
 
-                await _unitOfWork.Hotels.DeleteAsync(id);
-                await _unitOfWork.SaveAsync();
-
-                return NoContent();
-            }
-            catch (Exception ex)
+            var hotel = _unitOfWork.Hotels.GetAsync(q => q.Id == id);
+            if (hotel == null)
             {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(DeleteHotel)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
+                _logger.LogError($"Invalid delete attempt in {nameof(DeleteHotel)}: resource with id={id} was not found.");
+                return BadRequest($"Hotel with id={id} does not exist");
             }
+
+            await _unitOfWork.Hotels.DeleteAsync(id);
+            await _unitOfWork.SaveAsync();
+
+            return NoContent();
         }
     }
 }

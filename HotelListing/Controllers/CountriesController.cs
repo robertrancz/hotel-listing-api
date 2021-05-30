@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HotelListing.Controllers
@@ -33,17 +31,9 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountries([FromQuery] RequestParams requestParams)
         {
-            try
-            {
-                var countries = await _unitOfWork.Countries.GetAllPagedAsync(requestParams);
-                var results = _mapper.Map<IList<CountryDto>>(countries);
-                return Ok(results);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(GetCountries)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            var countries = await _unitOfWork.Countries.GetAllPagedAsync(requestParams);
+            var results = _mapper.Map<IList<CountryDto>>(countries);
+            return Ok(results);
         }
 
         [HttpGet("{id:int}", Name = "GetCountry")]
@@ -52,21 +42,13 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountry(int id)
         {
-            try
-            {
-                var country = await _unitOfWork.Countries.GetAsync(q => q.Id == id, new List<string> { "Hotels" });
-                var result = _mapper.Map<CountryDto>(country);
+            var country = await _unitOfWork.Countries.GetAsync(q => q.Id == id, new List<string> { "Hotels" });
+            var result = _mapper.Map<CountryDto>(country);
 
-                if (country == null)
-                    return StatusCode(StatusCodes.Status204NoContent); //, $"The request was successful, but there is no country with id={id}");
+            if (country == null)
+                return StatusCode(StatusCodes.Status204NoContent); //, $"The request was successful, but there is no country with id={id}");
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(GetCountries)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            return Ok(result);
         }
 
         [HttpPost]
@@ -81,20 +63,12 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var country = _mapper.Map<Country>(model);
-                await _unitOfWork.Countries.InsertAsync(country);
-                await _unitOfWork.SaveAsync();
+            var country = _mapper.Map<Country>(model);
+            await _unitOfWork.Countries.InsertAsync(country);
+            await _unitOfWork.SaveAsync();
 
-                // sets the 'Location' header with the route to the GET /country/{id} route
-                return CreatedAtRoute("GetCountry", new { id = country.Id }, country);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(CreateCountry)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+            // sets the 'Location' header with the route to the GET /country/{id} route
+            return CreatedAtRoute("GetCountry", new { id = country.Id }, country);
         }
 
         [HttpPut("{id:int}")]
@@ -109,26 +83,18 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var country = await _unitOfWork.Countries.GetAsync(q => q.Id == id);
+            if (country == null)
             {
-                var country = await _unitOfWork.Countries.GetAsync(q => q.Id == id);
-                if (country == null)
-                {
-                    _logger.LogError($"Invalid update attempt in {nameof(UpdateCountry)}: resource with id={id} was not found.");
-                    return BadRequest("Invalid id");
-                }
-
-                _mapper.Map(model, country);
-                _unitOfWork.Countries.Update(country);
-                await _unitOfWork.SaveAsync();
-
-                return NoContent();
+                _logger.LogError($"Invalid update attempt in {nameof(UpdateCountry)}: resource with id={id} was not found.");
+                return BadRequest("Invalid id");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(UpdateCountry)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
-            }
+
+            _mapper.Map(model, country);
+            _unitOfWork.Countries.Update(country);
+            await _unitOfWork.SaveAsync();
+
+            return NoContent();
         }
 
         /// <summary>Deletes the country and ALL HOTELS BELONGING TO THAT COUNTRY!!! Use with caution!</summary>        
@@ -137,7 +103,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        
+
         public async Task<IActionResult> DeleteCountry(int id)
         {
             if (id < 1)
@@ -145,25 +111,18 @@ namespace HotelListing.Controllers
                 _logger.LogError($"Invalid delete attempt in {nameof(DeleteCountry)}: resource with id={id} was not found.");
                 return BadRequest("Invalid id");
             }
-            try
-            {
-                var country = _unitOfWork.Countries.GetAsync(q => q.Id == id);
-                if (country == null)
-                {
-                    _logger.LogError($"Invalid delete attempt in {nameof(DeleteCountry)}: resource with id={id} was not found.");
-                    return BadRequest($"Country with id={id} does not exist");
-                }
 
-                await _unitOfWork.Countries.DeleteAsync(id);
-                await _unitOfWork.SaveAsync();
-
-                return NoContent();
-            }
-            catch (Exception ex)
+            var country = _unitOfWork.Countries.GetAsync(q => q.Id == id);
+            if (country == null)
             {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(DeleteCountry)}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error.");
+                _logger.LogError($"Invalid delete attempt in {nameof(DeleteCountry)}: resource with id={id} was not found.");
+                return BadRequest($"Country with id={id} does not exist");
             }
+
+            await _unitOfWork.Countries.DeleteAsync(id);
+            await _unitOfWork.SaveAsync();
+
+            return NoContent();
         }
     }
 }

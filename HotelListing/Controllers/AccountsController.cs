@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
 
 namespace HotelListing.Controllers
@@ -37,37 +36,29 @@ namespace HotelListing.Controllers
         {
             _logger.LogInformation($"User registration attempt for {userDto.Email}");
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var user = _mapper.Map<ApiUser>(userDto);
-                user.UserName = userDto.Email;
-                var result = await _userManager.CreateAsync(user, userDto.Password);
+            var user = _mapper.Map<ApiUser>(userDto);
+            user.UserName = userDto.Email;
+            var result = await _userManager.CreateAsync(user, userDto.Password);
 
-                if (!result.Succeeded)
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(error.Code, error.Description);
-                    }
-                    _logger.LogError($"User registration attempt failed for {userDto.Email}", ModelState);
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(error.Code, error.Description);
                 }
-
-                await _userManager.AddToRolesAsync(user, userDto.Roles);
-
-                _logger.LogInformation($"User registration successful for {userDto.Email}");
-                return Accepted();
+                _logger.LogError($"User registration attempt failed for {userDto.Email}", ModelState);
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(Register)}");
-                return Problem($"Something went wrong with your user registration", statusCode: StatusCodes.Status500InternalServerError);
-            }
+
+            await _userManager.AddToRolesAsync(user, userDto.Roles);
+
+            _logger.LogInformation($"User registration successful for {userDto.Email}");
+            return Accepted();
         }
 
         [HttpPost]
@@ -85,22 +76,14 @@ namespace HotelListing.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            if (!await _authManager.ValidateUserAsync(userDto))
             {
-                if(!await _authManager.ValidateUserAsync(userDto))
-                {
-                    _logger.LogInformation($"Login failed for {userDto.Email}. Invalid user name or password.");
-                    return Unauthorized();
-                }
+                _logger.LogInformation($"Login failed for {userDto.Email}. Invalid user name or password.");
+                return Unauthorized();
+            }
 
-                _logger.LogInformation($"Login successful for {userDto.Email}");
-                return Accepted(new { Token = await _authManager.CreateTokenAsync() });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(Login)}");
-                return Problem($"Something went wrong in the {nameof(Login)}", statusCode: StatusCodes.Status500InternalServerError);
-            }
+            _logger.LogInformation($"Login successful for {userDto.Email}");
+            return Accepted(new { Token = await _authManager.CreateTokenAsync() });
         }
     }
 }
