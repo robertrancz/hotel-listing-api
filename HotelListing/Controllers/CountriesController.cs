@@ -31,7 +31,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountries([FromQuery] RequestParams requestParams)
         {
-            var countries = await _unitOfWork.Countries.GetAllPagedAsync(requestParams);
+            var countries = await _unitOfWork.Countries.GetAllPagedAsync(requestParams, new List<string> { "Hotels" });
             var results = _mapper.Map<IList<CountryDto>>(countries);
             return Ok(results);
         }
