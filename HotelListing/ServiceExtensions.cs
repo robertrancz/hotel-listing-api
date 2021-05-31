@@ -89,5 +89,19 @@ namespace HotelListing
                 options.SubstituteApiVersionInUrl = true;
             });
         }
+
+        public static void ConfigureHttpCacheHeaders(this IServiceCollection services)
+        {
+            services.AddResponseCaching();
+            // Also handles Age, Last-Modified, Expires, Cache-Control and ETag header
+            services.AddHttpCacheHeaders(
+                expirationOptions => {
+                    expirationOptions.MaxAge = 60;
+                    expirationOptions.CacheLocation = Marvin.Cache.Headers.CacheLocation.Public;
+                },
+                validationOptions => {
+                    validationOptions.MustRevalidate = true;
+                });
+        }
     }
 }
