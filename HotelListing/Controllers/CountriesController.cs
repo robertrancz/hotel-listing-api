@@ -2,6 +2,7 @@
 using HotelListing.Data;
 using HotelListing.IRepository;
 using HotelListing.Models;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,7 @@ namespace HotelListing.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetCountry")]
+        [HttpCacheValidation(NoCache = true)]
         [ProducesResponseType(typeof(CountryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
